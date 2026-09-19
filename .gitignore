@@ -3,3 +3,4 @@ __pycache__/
 weights.json
 houses.csv
 *.png
+!docs/img/*.png
