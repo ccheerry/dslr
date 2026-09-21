@@ -6,8 +6,8 @@ import sys
 
 from dslr import load_dataset
 
-# every statistic is computed by hand, the subject forbids anything that
-# does the job (count, mean, std, min, max, percentile...)
+# every statistic is computed by hand, without len, sum, min, max or the
+# statistics module
 FIELDS = ["count", "mean", "std", "min", "25%", "50%", "75%", "max",
           "missing", "var", "range", "iqr", "skew"]
 
