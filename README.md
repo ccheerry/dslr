@@ -23,6 +23,27 @@ model and save its weights, **predict** with those weights. The bonus adds
 extra statistics to `describe` and two more optimizers to the training —
 mini-batch and stochastic gradient descent.
 
+<details>
+<summary><strong>🖼️ Screenshots</strong></summary>
+
+<br>
+
+<p align="center">
+  <img src="docs/img/terminal.png" alt="describe, training and prediction in a terminal" width="820">
+</p>
+
+<p align="center"><sub>The statistics of the training set, the four classifiers trained, and the 400 students of the test set sorted.</sub></p>
+
+<p align="center">
+  <img src="docs/img/plots.png" alt="histogram, scatter plot and pair plot" width="900">
+</p>
+
+<p align="center"><sub>The three plots that choose the features: <code>histogram.py</code>, <code>scatter_plot.py</code> and <code>pair_plot.py</code>.</sub></p>
+
+<br>
+
+</details>
+
 ## 🎯 Objectives
 
 - Reading a CSV of untrusted values, where any cell may be empty or malformed
@@ -79,13 +100,10 @@ mini-batch and stochastic gradient descent.
 ### Install and run
 
 ```bash
-pip install -r requirements.txt                          # numpy and matplotlib
-python3 srcs/describe.py datasets/dataset_train.csv
-python3 srcs/histogram.py datasets/dataset_train.csv
-python3 srcs/scatter_plot.py datasets/dataset_train.csv
-python3 srcs/pair_plot.py datasets/dataset_train.csv
-python3 srcs/logreg_train.py datasets/dataset_train.csv   # writes weights.json
-python3 srcs/logreg_predict.py datasets/dataset_test.csv weights.json   # writes houses.csv
+make install               # .venv with numpy and matplotlib
+make run                   # describe, the three plots, training and prediction
+make train OPTIMIZER=sgd
+make fclean                # generated files and the .venv
 ```
 
 ### Describing the dataset
@@ -139,6 +157,24 @@ most similar: Astronomy and Defense Against the Dark Arts
 every house, so they cannot help sort anyone; `Astronomy` is exactly
 `-100 × Defense Against the Dark Arts` on every student, so it says nothing
 the other does not. The remaining ten courses are what the model trains on.
+
+<p align="center">
+  <img src="docs/img/histogram.png" alt="histogram">
+</p>
+
+<p align="center"><sub><code>histogram.py</code>: one panel per course, the four houses overlaid. The two flat ones, <code>Arithmancy</code> and <code>Care of Magical Creatures</code>, are the courses the model does not use.</sub></p>
+
+<p align="center">
+  <img src="docs/img/scatter_plot.png" alt="scatter_plot">
+</p>
+
+<p align="center"><sub><code>scatter_plot.py</code>: the pair with the highest correlation, <code>Astronomy</code> against <code>Defense Against the Dark Arts</code>. A straight line: one is a multiple of the other.</sub></p>
+
+<p align="center">
+  <img src="docs/img/pair_plot.png" alt="pair_plot.py: every course against every other, coloured by house" width="640">
+</p>
+
+<p align="center"><sub><code>pair_plot.py</code> on the training set: histograms on the diagonal, scatter plots elsewhere. The courses worth keeping are the ones whose diagonal shows separate humps and whose row shows separate clouds.</sub></p>
 
 ### Training and predicting
 
@@ -221,7 +257,8 @@ on standard error and exit with status 1.
 
 | Tool | Needed for | Notes |
 |------|------------|-------|
-| `python3` | Everything | Tested with 3.14, nothing newer than 3.8 is used |
+| `python3` with `venv` | Everything | Tested with 3.14, nothing newer than 3.8 is used |
+| `make` | Install and run | `make install` creates `.venv/` with `requirements.txt` |
 | `numpy` ≥ 1.21 | `logreg_train`, `logreg_predict` | Matrix products and the random shuffle |
 | `matplotlib` ≥ 3.5 | `histogram`, `scatter_plot`, `pair_plot` | Falls back to a PNG when there is no display |
 
@@ -230,9 +267,18 @@ on standard error and exit with status 1.
 ### Install
 
 ```bash
-python3 -m venv .venv && source .venv/bin/activate      # optional
-pip install -r requirements.txt
+make install                # .venv/ with requirements.txt
+source .venv/bin/activate   # only to run the scripts by hand
 ```
+
+| Target | What it does |
+|---|---|
+| `make` | The list of targets |
+| `make run` | `describe`, the three plots, training and prediction |
+| `make describe`, `make histogram`, `make scatter_plot`, `make pair_plot` | One program on the training set |
+| `make train OPTIMIZER=batch\|minibatch\|sgd` | Training, `weights.json` |
+| `make predict` | Prediction, `houses.csv` (trains first if there is no `weights.json`) |
+| `make clean` / `make fclean` | Generated files / and the `.venv` |
 
 ### Running
 
@@ -241,12 +287,12 @@ root of the repository; the files it writes land in the current directory.
 
 ```bash
 python3 srcs/describe.py datasets/dataset_train.csv
-python3 srcs/histogram.py datasets/dataset_train.csv            # window, or histogram.png
-python3 srcs/scatter_plot.py datasets/dataset_train.csv         # window, or scatter_plot.png
-python3 srcs/pair_plot.py datasets/dataset_train.csv            # window, or pair_plot.png
+python3 srcs/histogram.py datasets/dataset_train.csv                            # window, or histogram.png
+python3 srcs/scatter_plot.py datasets/dataset_train.csv                         # window, or scatter_plot.png
+python3 srcs/pair_plot.py datasets/dataset_train.csv                            # window, or pair_plot.png
 python3 srcs/logreg_train.py datasets/dataset_train.csv [batch|minibatch|sgd]   # weights.json
 python3 srcs/logreg_predict.py datasets/dataset_test.csv weights.json           # houses.csv
-MPLBACKEND=agg python3 srcs/pair_plot.py datasets/dataset_train.csv   # force the PNG
+MPLBACKEND=agg python3 srcs/pair_plot.py datasets/dataset_train.csv             # force the PNG
 ```
 
 ### Dataset format
@@ -274,29 +320,32 @@ skip the student for that course and the model replaces it by the mean.
 ```
 dslr/
 │
-├── README.md                             # Main project documentation
-├── requirements.txt                      # numpy and matplotlib
-├── .gitignore                            # weights.json, houses.csv and PNGs (docs/img is kept)
+├── README.md                  # Main project documentation
+├── Makefile                   # install (.venv), every program, clean
+├── requirements.txt           # numpy and matplotlib
+├── .gitignore                 # weights.json, houses.csv and PNGs (docs/img is kept)
 │
 ├── docs/
-│   ├── README.md                         # Condensed project documentation
+│   ├── README.md              # Condensed project documentation
 │   └── img/
-│       ├── histogram.png                 # Output of histogram.py on the training set
-│       ├── scatter_plot.png              # Output of scatter_plot.py
-│       └── pair_plot.png                 # Output of pair_plot.py
+│       ├── terminal.png       # describe, training and prediction in a terminal
+│       ├── plots.png          # The three plots side by side
+│       ├── histogram.png      # Output of histogram.py on the training set
+│       ├── scatter_plot.png   # Output of scatter_plot.py
+│       └── pair_plot.png      # Output of pair_plot.py
 │
 ├── datasets/
-│   ├── dataset_train.csv                 # 1 600 students with their house
-│   └── dataset_test.csv                  # 400 students to sort, house column empty
+│   ├── dataset_train.csv      # 1 600 students with their house
+│   └── dataset_test.csv       # 400 students to sort, house column empty
 │
 └── srcs/
-    ├── dslr.py                           # Shared: houses, courses, colours, CSV loading, cell parsing, show()
-    ├── describe.py                       # Statistics by hand, one column per numeric feature
-    ├── histogram.py                      # Homogeneity score per course, 4 x 4 grid of histograms
-    ├── scatter_plot.py                   # Pearson correlation per pair, the most similar pair plotted
-    ├── pair_plot.py                      # 13 x 13 scatter matrix with histograms on the diagonal
-    ├── logreg_train.py                   # Features, preprocessing, one-vs-all gradient descent, weights.json
-    └── logreg_predict.py                 # Loads weights.json, sorts a dataset into houses.csv
+    ├── dslr.py                # Shared: houses, courses, colours, CSV loading, cell parsing, show()
+    ├── describe.py            # Statistics by hand, one column per numeric feature
+    ├── histogram.py           # Homogeneity score per course, 4 x 4 grid of histograms
+    ├── scatter_plot.py        # Pearson correlation per pair, the most similar pair plotted
+    ├── pair_plot.py           # 13 x 13 scatter matrix with histograms on the diagonal
+    ├── logreg_train.py        # Features, preprocessing, one-vs-all gradient descent, weights.json
+    └── logreg_predict.py      # Loads weights.json, sorts a dataset into houses.csv
 ```
 
 `dslr.py` is the module the six programs share: the house and course lists,
@@ -424,28 +473,6 @@ The learning rate, epoch count and batch size of each one live in the
 loss of each classifier and the training accuracy, so the three can be
 compared side by side.
 
-### The plots
-
-`docs/img/` keeps the three figures drawn from the training set.
-
-**histogram** — one panel per course, the four houses overlaid. The two flat
-ones, `Arithmancy` and `Care of Magical Creatures`, are the courses the
-model does not use.
-
-![histogram](docs/img/histogram.png)
-
-**scatter_plot** — the pair with the highest correlation, `Astronomy` against
-`Defense Against the Dark Arts`: a straight line, one is a multiple of the
-other.
-
-![scatter_plot](docs/img/scatter_plot.png)
-
-**pair_plot** — every course against every other. The courses worth keeping
-are the ones whose diagonal shows separate humps and whose row shows separate
-clouds.
-
-![pair_plot](docs/img/pair_plot.png)
-
 <br>
 
 </details>
@@ -491,6 +518,7 @@ clouds.
 ## 🔧 Requirements
 
 - `python3` — tested with 3.14, nothing newer than 3.8 is used
+- GNU Make, which installs everything into `.venv/` and runs the programs
 - `numpy` ≥ 1.21 and `matplotlib` ≥ 3.5, from `requirements.txt`
 - A display for the plot windows, or none: without one the figure is written
   to a PNG in the current directory
